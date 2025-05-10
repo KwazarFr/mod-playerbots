@@ -1124,6 +1124,19 @@ std::vector<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* arg
             if (guildId && PlayerbotAI::IsRealGuild(guildId))
                 continue;
             AddPlayerBot(guid, master->GetSession()->GetAccountId());
+            // Initialisation auto comme "init=auto"
+            Player* bot = ObjectAccessor::FindPlayer(guid);
+            if (bot)
+            {
+                uint32 mixedGearScore = PlayerbotAI::GetMixedGearScore(master, true, false, 12) *
+                                        sPlayerbotAIConfig->autoInitEquipLevelLimitRatio;
+            
+                if (mixedGearScore == 0)
+                    mixedGearScore = 1;
+            
+                PlayerbotFactory factory(bot, master->GetLevel(), ITEM_QUALITY_LEGENDARY, mixedGearScore);
+                factory.Randomize(false);
+            }
             messages.push_back("Add class " + std::string(charname));
             return messages;
         }
