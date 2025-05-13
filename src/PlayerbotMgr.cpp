@@ -582,16 +582,15 @@ void PlayerbotHolder::OnBotLogin(Player* const bot)
 
     bot->SaveToDB(false, false);
     bool addClassBot = sRandomPlayerbotMgr->IsAddclassBot(bot->GetGUID().GetCounter());
-    if (addClassBot && master && isRandomAccount && abs((int)master->GetLevel() - (int)bot->GetLevel()) > 3)
+    if (addClassBot && master && isRandomAccount)
     {
-        // PlayerbotFactory factory(bot, master->GetLevel());
-        // factory.Randomize(false);
-        uint32 mixedGearScore =
-            PlayerbotAI::GetMixedGearScore(master, true, false, 12) * sPlayerbotAIConfig->autoInitEquipLevelLimitRatio;
-        // work around: distinguish from 0 if no gear
-        if (mixedGearScore == 0)
-            mixedGearScore = 1;
-        PlayerbotFactory factory(bot, master->GetLevel(), ITEM_QUALITY_LEGENDARY, mixedGearScore);
+        uint32 gearScore = PlayerbotAI::GetEquipGearScore(master) *
+                           sPlayerbotAIConfig->autoInitEquipLevelLimitRatio;
+    
+        if (gearScore == 0)
+            gearScore = 1;
+    
+        PlayerbotFactory factory(bot, master->GetLevel(), ITEM_QUALITY_LEGENDARY, gearScore);
         factory.Randomize(false);
     }
 
@@ -779,7 +778,7 @@ std::string const PlayerbotHolder::ProcessBotCommand(std::string const cmd, Obje
             }
             else if (cmd == "init=auto")
             {
-                uint32 mixedGearScore = PlayerbotAI::GetMixedGearScore(master, true, false, 12) *
+                uint32 mixedGearScore = PlayerbotAI::GetMixedGearScore(master, false, false, 12) *
                                         sPlayerbotAIConfig->autoInitEquipLevelLimitRatio;
                 // work around: distinguish from 0 if no gear
                 if (mixedGearScore == 0)
