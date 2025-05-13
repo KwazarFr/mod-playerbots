@@ -253,17 +253,17 @@ uint32 ChatHelper::parseMoney(std::string const text)
     {
         if (text[i] == 'g')
         {
-            copper += (atol(acum.c_str()) * 100 * 100);
+            copper = 0;
             acum = "";
         }
         else if (text[i] == 'c')
         {
-            copper += atol(acum.c_str());
+            copper = 0;
             acum = "";
         }
         else if (text[i] == 's')
         {
-            copper += (atol(acum.c_str()) * 100);
+            copper = 0;
             acum = "";
         }
         else if (text[i] == ' ')
