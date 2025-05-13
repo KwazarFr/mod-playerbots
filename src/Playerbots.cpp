@@ -102,9 +102,7 @@ public:
             // but it should be publicly accessible and include all modifications you've made
             if (sPlayerbotAIConfig->enabled)
             {
-                ChatHandler(player->GetSession()).SendSysMessage(
-                    "|cff00ff00This server runs with |cff00ccffmod-playerbots|r "
-                    "|cffcccccchttps://github.com/liyunfan1223/mod-playerbots|r");
+                ChatHandler(player->GetSession()).SendSysMessage("");
             }
 
             if (sPlayerbotAIConfig->enabled || sPlayerbotAIConfig->randomBotAutologin)
@@ -113,9 +111,7 @@ public:
                     std::to_string(std::ceil((sPlayerbotAIConfig->maxRandomBots * 0.11 / 60) * 10) / 10.0);
                 roundedTime = roundedTime.substr(0, roundedTime.find('.') + 2);
 
-                ChatHandler(player->GetSession()).SendSysMessage(
-                    "|cff00ff00Playerbots:|r bot initialization at server startup takes about '" 
-                    + roundedTime + "' minutes.");
+                ChatHandler(player->GetSession()).SendSysMessage("");
             }
         }
     }
