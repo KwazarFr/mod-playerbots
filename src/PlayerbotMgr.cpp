@@ -196,7 +196,6 @@ void PlayerbotHolder::HandlePlayerBotLoginCallback(PlayerbotLoginQueryHolder con
         botLoading.erase(holder.GetGuid());
         return;
     }
-    }
 
     sRandomPlayerbotMgr->OnPlayerLogin(bot);
     OnBotLogin(bot);
