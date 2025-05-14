@@ -8,6 +8,8 @@
 
 #include <list>
 #include <set>
+#include <map>
+#include <shared_mutex>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -92,17 +94,27 @@ public:
 
     virtual ~NamedObjectContext() { Clear(); }
 
-    T* create(std::string const name, PlayerbotAI* botAI)
+    T* create(std::string const& name, PlayerbotAI* botAI)
     {
-        if (created.find(name) == created.end())
-            return created[name] = NamedObjectFactory<T>::create(name, botAI);
+        std::unique_lock<std::shared_mutex> guard(createMutex);
+        auto it = created.find(name);
+        if (it == created.end())
+        {
+            T* obj = NamedObjectFactory<T>::create(name, botAI);
+            if (!obj)
+                return nullptr;
 
-        return created[name];
+            created[name] = obj;
+            return obj;
+        }
+
+        return it->second;
     }
 
     void Clear()
     {
-        for (typename std::unordered_map<std::string, T*>::iterator i = created.begin(); i != created.end(); i++)
+        std::unique_lock<std::shared_mutex> guard(createMutex);
+        for (typename std::map<std::string, T*>::iterator i = created.begin(); i != created.end(); i++)
         {
             if (i->second)
                 delete i->second;
@@ -113,7 +125,8 @@ public:
 
     void Update()
     {
-        for (typename std::unordered_map<std::string, T*>::iterator i = created.begin(); i != created.end(); i++)
+        std::unique_lock<std::shared_mutex> guard(createMutex);
+        for (typename std::map<std::string, T*>::iterator i = created.begin(); i != created.end(); i++)
         {
             if (i->second)
                 i->second->Update();
@@ -122,7 +135,8 @@ public:
 
     void Reset()
     {
-        for (typename std::unordered_map<std::string, T*>::iterator i = created.begin(); i != created.end(); i++)
+        std::unique_lock<std::shared_mutex> guard(createMutex);
+        for (typename std::map<std::string, T*>::iterator i = created.begin(); i != created.end(); i++)
         {
             if (i->second)
                 i->second->Reset();
@@ -134,15 +148,17 @@ public:
 
     std::set<std::string> GetCreated()
     {
+        std::shared_lock<std::shared_mutex> guard(createMutex);
         std::set<std::string> keys;
-        for (typename std::unordered_map<std::string, T*>::iterator it = created.begin(); it != created.end(); it++)
+        for (typename std::map<std::string, T*>::iterator it = created.begin(); it != created.end(); it++)
             keys.insert(it->first);
 
         return keys;
     }
 
 protected:
-    std::unordered_map<std::string, T*> created;
+    std::map<std::string, T*> created;
+    std::shared_mutex createMutex;
     bool shared;
     bool supportsSiblings;
 };
