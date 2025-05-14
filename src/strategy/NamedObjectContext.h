@@ -9,6 +9,7 @@
 #include <list>
 #include <set>
 #include <map>
+#include <mutex>
 #include <shared_mutex>
 #include <unordered_map>
 #include <unordered_set>
