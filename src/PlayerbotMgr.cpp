@@ -586,17 +586,28 @@ void PlayerbotHolder::OnBotLogin(Player* const bot)
     }
 
     bot->SaveToDB(false, false);
-    bool addClassBot = sRandomPlayerbotMgr->IsAddclassBot(bot->GetGUID().GetCounter());
-    if (addClassBot && master && isRandomAccount)
+    static std::unordered_map<ObjectGuid::LowType, time_t> addClassBotInitTime;
+
+bool addClassBot = sRandomPlayerbotMgr->IsAddclassBot(bot->GetGUID().GetCounter());
+if (addClassBot && master && isRandomAccount)
+{
+    time_t now = time(nullptr);
+    time_t& lastInitTime = addClassBotInitTime[bot->GetGUID().GetCounter()];
+    double secondsSinceLastInit = difftime(now, lastInitTime);
+
+    if (lastInitTime == 0 || secondsSinceLastInit < 30.0)
     {
-                uint32 mixedGearScore = PlayerbotAI::GetMixedGearScore(master, false, false, 12) *
-                                        sPlayerbotAIConfig->autoInitEquipLevelLimitRatio;
-                // work around: distinguish from 0 if no gear
-                if (mixedGearScore == 0)
-                    mixedGearScore = 1;
-                PlayerbotFactory factory(bot, master->GetLevel(), ITEM_QUALITY_LEGENDARY, mixedGearScore);
+        uint32 mixedGearScore = PlayerbotAI::GetMixedGearScore(master, false, false, 12) *
+                                sPlayerbotAIConfig->autoInitEquipLevelLimitRatio;
+        if (mixedGearScore == 0)
+            mixedGearScore = 1;
+
+        PlayerbotFactory factory(bot, master->GetLevel(), ITEM_QUALITY_LEGENDARY, mixedGearScore);
         factory.Randomize(false);
     }
+
+    lastInitTime = now;
+}
 
     // bots join World chat if not solo oriented
     if (bot->GetLevel() >= 10 && sRandomPlayerbotMgr->IsRandomBot(bot) && GET_PLAYERBOT_AI(bot) &&
