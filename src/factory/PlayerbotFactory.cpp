@@ -813,6 +813,10 @@ void PlayerbotFactory::InitPetTalents()
 void PlayerbotFactory::InitPet()
 {
     Pet* pet = bot->GetPet();
+
+    if (!pet && bot->GetPetStable() && bot->GetPetStable()->CurrentPet)
+        return;
+
     if (!pet)
     {
         if (bot->getClass() != CLASS_HUNTER || bot->GetLevel() < 10)
@@ -861,7 +865,8 @@ void PlayerbotFactory::InitPet()
             uint32 pet_number = sObjectMgr->GeneratePetNumber();
             if (bot->GetPetStable() && bot->GetPetStable()->CurrentPet)
             {
-                bot->GetPetStable()->CurrentPet.value();
+                auto petGuid = bot->GetPetStable()->CurrentPet.value(); // To correct the build warnin in VS
+                // bot->GetPetStable()->CurrentPet.value();
                 // bot->GetPetStable()->CurrentPet.reset();
                 bot->RemovePet(nullptr, PET_SAVE_AS_CURRENT);
                 bot->RemovePet(nullptr, PET_SAVE_NOT_IN_SLOT);
@@ -1738,7 +1743,7 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
 
         if (incremental && oldItem)
         {
-            float old_score = calculator.CalculateItem(oldItem->GetEntry());
+            float old_score = calculator.CalculateItem(oldItem->GetEntry(), oldItem->GetItemRandomPropertyId());
             if (bestScoreForSlot < 1.2f * old_score)
                 continue;
         }
