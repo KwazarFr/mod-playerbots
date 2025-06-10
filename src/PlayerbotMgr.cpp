@@ -594,7 +594,7 @@ bool addClassBot = sRandomPlayerbotMgr->IsAddclassBot(bot->GetGUID().GetCounter(
 if (addClassBot && master && isRandomAccount && !group)
 {
     // Reset des instances uniquement à la première invocation du bot
-    bot->ResetInstances(INSTANCE_RESET_ALL, true);
+    Player::ResetInstances(bot->GetGUID(), INSTANCE_RESET_ALL, true);
     
     uint32 mixedGearScore =
         PlayerbotAI::GetMixedGearScore(master, false, false, 12) *
