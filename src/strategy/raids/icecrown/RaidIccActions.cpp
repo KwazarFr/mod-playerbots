@@ -175,10 +175,11 @@ void IccSpikeAction::UpdateRaidTargetIcon(Unit* target)
         const ObjectGuid currentSkull = group->GetTargetIcon(SKULL_ICON_INDEX);
         Unit* currentSkullUnit = botAI->GetUnit(currentSkull);
 
-        const bool needsUpdate = !currentSkullUnit || !currentSkullUnit->IsAlive() || currentSkullUnit != target;
+        // Ne remplace pas l’icône si elle est déjà posée sur une cible vivante
+        if (currentSkullUnit && currentSkullUnit->IsAlive())
+            return;
 
-        if (needsUpdate)
-            group->SetTargetIcon(SKULL_ICON_INDEX, bot->GetGUID(), target->GetGUID());
+        group->SetTargetIcon(SKULL_ICON_INDEX, bot->GetGUID(), target->GetGUID());
     }
 }
 
@@ -412,10 +413,11 @@ void IccAddsLadyDeathwhisperAction::UpdateRaidTargetIcon(Unit* target)
         const ObjectGuid currentSkull = group->GetTargetIcon(SKULL_ICON_INDEX);
         Unit* currentSkullUnit = botAI->GetUnit(currentSkull);
 
-        const bool needsUpdate = !currentSkullUnit || !currentSkullUnit->IsAlive() || currentSkullUnit != target;
+        // Ne remplace pas l’icône si elle est déjà posée sur une cible vivante
+        if (currentSkullUnit && currentSkullUnit->IsAlive())
+            return;
 
-        if (needsUpdate)
-            group->SetTargetIcon(SKULL_ICON_INDEX, bot->GetGUID(), target->GetGUID());
+        group->SetTargetIcon(SKULL_ICON_INDEX, bot->GetGUID(), target->GetGUID());
     }
 }
 
