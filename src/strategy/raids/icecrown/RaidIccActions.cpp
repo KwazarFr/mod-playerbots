@@ -1277,7 +1277,7 @@ Unit* IccAddsDbsAction::FindPriorityTarget(Unit* boss)
 
 void IccAddsDbsAction::UpdateSkullMarker(Unit* priorityTarget)
 {
-    if (!priorityTarget)
+    if (!priorityTarget || !priorityTarget->IsAlive())
         return;
 
     Group* group = bot->GetGroup();
@@ -1286,17 +1286,16 @@ void IccAddsDbsAction::UpdateSkullMarker(Unit* priorityTarget)
 
     constexpr uint8_t skullIconId = 7;
 
-    // Get current skull target
-    ObjectGuid currentSkull = group->GetTargetIcon(skullIconId);
-    Unit* currentSkullUnit = botAI->GetUnit(currentSkull);
+    ObjectGuid skullGuid = group->GetTargetIcon(skullIconId);
+    Unit* currentSkullUnit = botAI->GetUnit(skullGuid);
 
-    // Determine if skull marker needs updating
-    bool needsUpdate = !currentSkullUnit || !currentSkullUnit->IsAlive() || currentSkullUnit != priorityTarget;
+    // Respecte une cible vivante déjà marquée
+    if (currentSkullUnit && currentSkullUnit->IsAlive())
+        return;
 
-    // Update if needed
-    if (needsUpdate)
-        group->SetTargetIcon(skullIconId, bot->GetGUID(), priorityTarget->GetGUID());
+    group->SetTargetIcon(skullIconId, bot->GetGUID(), priorityTarget->GetGUID());
 }
+
 
 // Festergut
 bool IccFestergutGroupPositionAction::Execute(Event event)
@@ -1652,15 +1651,24 @@ bool IccRotfaceTankPositionAction::Execute(Event event)
 
 void IccRotfaceTankPositionAction::MarkBossWithSkull(Unit* boss)
 {
+    if (!boss)
+        return;
+
     Group* group = bot->GetGroup();
     if (!group)
         return;
 
     constexpr uint8_t skullIconId = 7;
     ObjectGuid skullGuid = group->GetTargetIcon(skullIconId);
-    if (skullGuid != boss->GetGUID())
-        group->SetTargetIcon(skullIconId, bot->GetGUID(), boss->GetGUID());
+    Unit* currentSkullUnit = botAI->GetUnit(skullGuid);
+
+    // Respecte la cible déjà marquée si elle est vivante
+    if (currentSkullUnit && currentSkullUnit->IsAlive())
+        return;
+
+    group->SetTargetIcon(skullIconId, bot->GetGUID(), boss->GetGUID());
 }
+
 
 bool IccRotfaceTankPositionAction::PositionMainTankAndMelee(Unit* boss)
 {
@@ -2499,6 +2507,9 @@ bool IccPutricideVolatileOozeAction::Execute(Event event)
 
 void IccPutricideVolatileOozeAction::MarkOozeWithSkull(Unit* ooze)
 {
+    if (!ooze || !ooze->IsAlive())
+        return;
+
     Group* group = bot->GetGroup();
     if (!group)
         return;
@@ -2507,14 +2518,13 @@ void IccPutricideVolatileOozeAction::MarkOozeWithSkull(Unit* ooze)
     ObjectGuid skullGuid = group->GetTargetIcon(skullIconId);
     Unit* markedUnit = botAI->GetUnit(skullGuid);
 
-    // Clear dead marks or marks that are not on ooze
-    if (markedUnit && (!markedUnit->IsAlive() || (ooze && markedUnit != ooze)))
-        group->SetTargetIcon(skullIconId, bot->GetGUID(), ObjectGuid::Empty);
+    // Respecte la cible actuelle si vivante
+    if (markedUnit && markedUnit->IsAlive())
+        return;
 
-    // Mark alive ooze if needed
-    if (ooze && ooze->IsAlive() && (!skullGuid || !markedUnit))
-        group->SetTargetIcon(skullIconId, bot->GetGUID(), ooze->GetGUID());
+    group->SetTargetIcon(skullIconId, bot->GetGUID(), ooze->GetGUID());
 }
+
 
 Unit* IccPutricideVolatileOozeAction::FindAuraTarget()
 {
