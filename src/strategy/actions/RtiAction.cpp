@@ -99,6 +99,9 @@ bool MarkRtiAction::Execute(Event event)
 
     std::string const rti = AI_VALUE(std::string, "rti");
     uint8 index = RtiTargetValue::GetRtiIndex(rti);
+    // Ne remplace pas l'icône si elle est déjà posée sur une unité vivante
+Unit* currentTarget = botAI->GetUnit(group->GetTargetIcon(index));
+if (!currentTarget || !currentTarget->IsAlive())
+{
     group->SetTargetIcon(index, bot->GetGUID(), target->GetGUID());
-    return true;
 }
